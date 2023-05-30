@@ -1,0 +1,65 @@
+function SendTelegram() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activeCell = ss.getActiveSheet().getActiveCell();
+  var rowNum = activeCell.getRow();
+
+  var scriptName = ss.getActiveSheet().getRange(rowNum, 1).getValue();
+  var scriptInfo = ss.getActiveSheet().getRange(rowNum, 2).getValue();
+  var author = ss.getActiveSheet().getRange(rowNum, 3).getValue();
+  var type = ss.getActiveSheet().getRange(rowNum, 4).getValue();
+  var ticetExample = ss.getActiveSheet().getRange(rowNum, 5).getValue();
+  var minervaUrl = ss.getActiveSheet().getRange(rowNum, 6).getValue();
+  var executor = ss.getActiveSheet().getRange(rowNum, 7).getValue();
+  var status = ss.getActiveSheet().getRange(rowNum, 8).getValue();
+  var date = ss.getActiveSheet().getRange(rowNum, 9).getValue();
+
+  var token = "***";
+
+
+  var text = encodeURIComponent("<b>Название инструкции: </b>"+scriptName + "\n\n" + "<b>Описание задачи: </b>"+scriptInfo + "\n\n" + "<b>Автор задачи: </b>"+author+ "\n" + "<b>Тип задачи: </b>"+type + "\n" +"<b>Пример тикета (успешного кейса): </b>"+ticetExample+ "\n"+ "<b>Ссылка в минерве: </b>"+minervaUrl+ "\n" +"<b>Исполнитель: </b>"+executor + "\n" + "<b>Статус: </b>"+status+ "\n" + "<b>Дата: </b>"+date);
+
+  var longUrl = "https://api.telegram.org/bot" + token + "/sendMessage?chat_id=&text=" + text + "&parse_mode=HTML";
+messBox(longUrl)
+}
+
+
+function getShortUrl_(longUrl) {
+const apiKey = "**"; // Please set your API key.
+const yourDynamicLinkDomain = "****"; // Please set your dynamic link domain.
+  const url = "https://firebasedynamiclinks.googleapis.com/v1/shortLinks?key=" + apiKey;
+  const options = {
+    payload: JSON.stringify({
+      dynamicLinkInfo: {
+        dynamicLinkDomain: yourDynamicLinkDomain,
+        link: longUrl,
+      },
+    }),
+    contentType: "application/json",
+  };
+  const res = UrlFetchApp.fetch(url, options);
+  const { shortLink } = JSON.parse(res.getContentText());
+  return shortLink;
+
+}
+
+
+function messBox(longUrl) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ui = SpreadsheetApp.getUi();
+
+  const shortUrl = getShortUrl_(longUrl);
+
+  var columStatus = ss.getActiveSheet().getActiveCell().getColumn();
+  var rowStatus = ss.getActiveSheet().getActiveCell().getRow();
+
+  if(columStatus == 8 && rowStatus > 1 && ss.getActiveSheet().getName()=="Скрипты т1 в минерву (new)"){
+    var response = ui.alert("Отправить сообщение в телеграмм?", ui.ButtonSet.YES_NO)
+     if (response == ui.Button.YES) {
+       const options = {
+
+      };
+      var openUrl = UrlFetchApp.fetch(shortUrl, options).getContentText();
+     }
+  }
+  Logger.log(shortUrl)
+}
